@@ -1,31 +1,31 @@
 [project]
 name = "volucra-django-base"
 version = "0.1.0"
-description = "Reusable Django apps: tabler_ui for the Tabler based look and volucra_base for accounts, SSO and generic views"
+description = "Reusable Django apps: tabler_ui for the Tabler based look and the account pages, volucra_base for the SSO login and generic views"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "crispy-bootstrap5>=2024.10",
-    "django>=5.1",
-    "django-crispy-forms>=2.3",
-    "django-filter>=25.1",
-    "django-tables2>=2.7.5",
+    "crispy-bootstrap5>=2024.10,<2027",
+    "django>=5.1,<7",
+    "django-crispy-forms>=2.3,<3",
+    "django-filter>=25.1,<27",
+    "django-tables2>=2.7.5,<4",
 ]
 
 [project.optional-dependencies]
 # Login with OpenID Connect, see volucra_base.auth_pipeline
 sso = [
-    "social-auth-app-django>=5.4.3",
+    "social-auth-app-django>=5.4.3,<9",
 ]
 
 [dependency-groups]
 dev = [
-    "django-stubs[compatible-mypy]>=5.1.3",
-    "djhtml>=3.0.7",
-    "djlint>=1.36.4",
-    "mypy>=1.15.0",
-    "ruff>=0.9.10",
-    "social-auth-app-django>=5.4.3",
+    "django-stubs[compatible-mypy]>=5.1.3,<7",
+    "djhtml>=3.0.7,<4",
+    "djlint>=1.36.4,<2",
+    "mypy>=1.15.0,<3",
+    "ruff>=0.9.10,<0.18",
+    "social-auth-app-django>=5.4.3,<9",
 ]
 
 [build-system]
