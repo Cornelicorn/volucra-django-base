@@ -173,3 +173,14 @@ uv run python -m django test --settings=tests.settings --pythonpath=.
 uv run ruff check && uv run ruff format --check
 uv run djlint --check src
 ```
+
+### Releases
+
+Set the new version in `pyproject.toml`, commit it and push a tag with the same version, e.g. `v0.2.0`. The release
+workflow then builds the package and drafts a GitHub release with the wheel, the source distribution and generated
+release notes, which only has to be published. It fails if the tag doesn't match the version in `pyproject.toml`.
+
+### Dependency updates
+
+Dependabot updates `uv.lock` and the GitHub Actions weekly. The dependencies have an upper bound below their next
+major version, which Dependabot raises when a new major version comes out (`versioning-strategy: widen`).
