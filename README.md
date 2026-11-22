@@ -181,6 +181,13 @@ leaves the default of Tabler:
 `TABLER_UI_THEME_BASE` defaults to `"gray"`, the blue tinted gray scale of Tabler up to 1.5. Tabler 1.6 changed its
 default to `"neutral"`, set `TABLER_UI_THEME_BASE = None` for it.
 
+### Icons
+
+The [Tabler Icons](https://tabler.io/icons) webfont with the outline icons is included, e.g.
+`<i class="ti ti-pencil"></i>`. The browser only downloads the parts of the font with icons shown on the page. The
+filled icons aren't included: their stylesheet uses the same class names as the outline icons, so both can't be used
+on one page.
+
 ### User preferences
 
 Any app can declare preferences in the attribute `user_preferences` of its `AppConfig`, as a dictionary of form fields.
@@ -233,6 +240,19 @@ release notes, which only has to be published. It fails if the tag doesn't match
 Publishing the release starts the publish workflow, which uploads the wheel and the source distribution of the release
 to PyPI with [Trusted Publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored in the
 repository. It runs in the GitHub environment `pypi`, which can require an approval before the upload.
+
+### Updating Tabler
+
+The files in `src/tabler_ui/static/tabler_ui/dist` are copied unchanged from the npm packages, currently
+`@tabler/core` 1.7.5 and `@tabler/icons-webfont` 3.52.0:
+
+- `css/` and `js/`: `tabler.min.css`, `tabler-themes.min.css` and `tabler.min.js` with their source maps from
+  `dist/css` and `dist/js` of `@tabler/core`
+- `tabler-icons/`: `tabler-icons.min.css` from `dist` of `@tabler/icons-webfont` and the fonts in `dist/fonts` it
+  references
+
+The tests run `collectstatic` with `ManifestStaticFilesStorage`, which fails if a stylesheet references a missing
+file.
 
 ### Dependency updates
 

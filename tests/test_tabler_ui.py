@@ -1,12 +1,14 @@
 import sys
+import tempfile
 from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.core.management import call_command
 from django.db import connection
 from django.template import Context, Template
 from django.template.loader import render_to_string
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 
 from tabler_ui.templatetags.tabler_ui import humanize_seconds, startswith, tabler_ui_theme_preference
@@ -145,6 +147,17 @@ class LayoutTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertContains(response, "Not Found", status_code=404)
         self.assertContains(response, "tabler.min.css", status_code=404)
+
+
+class StaticFilesTests(SimpleTestCase):
+    def test_files_referenced_by_the_stylesheets_exist(self):
+        # ManifestStaticFilesStorage fails if a font or source map referenced by a stylesheet is missing
+        storages = {
+            **settings.STORAGES,
+            "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"},
+        }
+        with tempfile.TemporaryDirectory() as static_root, self.settings(STATIC_ROOT=static_root, STORAGES=storages):
+            call_command("collectstatic", interactive=False, verbosity=0)
 
 
 class GenericViewTests(TestCase):
