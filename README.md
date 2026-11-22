@@ -25,8 +25,7 @@ button to the login page of `tabler_ui` and saves its theme in the user preferen
 
 ## Installation
 
-It needs Python 3.12 or newer and Django 6.1. The repository is private, so the machine installing it needs read
-access to it on GitHub, e.g. through an SSH key or a token in the git credentials. With uv, pinned to a tag or commit:
+It needs Python 3.12 or newer and Django 6.1. Install it from GitHub with uv, pinned to a tag or commit:
 
 ```sh
 uv add git+https://github.com/Cornelicorn/volucra-django-base --tag v0.1.0
