@@ -1,53 +1,34 @@
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.db import connection
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 
-from tabler_ui.models import UserPreferences
+from tabler_ui.preferences import THEME_KEY, get_preference_store
 from tabler_ui.templatetags.tabler_ui import humanize_seconds, startswith
+from volucra_base.models import UserPreferences
+from volucra_base.preferences import store
 
 
 class ThemeTests(TestCase):
+    """The theme with volucra_base, which saves it in the preferences of logged in users"""
+
     def setUp(self):
         self.user = User.objects.create_user("user", password="password")
 
-    def test_logged_in_users_save_their_theme(self):
-        self.client.force_login(self.user)
-        response = self.client.post("/ui/theme/", {"theme": "dark"})
-        self.assertEqual(response.status_code, 204)
-        self.assertEqual(UserPreferences.objects.get(user=self.user).theme, "dark")
-
-        self.client.post("/ui/theme/", {"theme": "light"})
-        self.assertEqual(UserPreferences.objects.get(user=self.user).theme, "light")
-
-    def test_anonymous_users_save_nothing(self):
-        response = self.client.post("/ui/theme/", {"theme": "dark"})
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(UserPreferences.objects.exists())
-
-    def test_unknown_themes_are_rejected(self):
-        self.client.force_login(self.user)
-        self.assertEqual(self.client.post("/ui/theme/", {"theme": "pink"}).status_code, 400)
-        self.assertEqual(self.client.post("/ui/theme/").status_code, 400)
-        self.assertFalse(UserPreferences.objects.exists())
-
-    def test_theme_is_only_saved_with_post(self):
-        self.client.force_login(self.user)
-        self.assertEqual(self.client.get("/ui/theme/", {"theme": "dark"}).status_code, 405)
-
-    def test_theme_needs_csrf_token(self):
-        client = self.client_class(enforce_csrf_checks=True)
-        client.force_login(self.user)
-        self.assertEqual(client.post("/ui/theme/", {"theme": "dark"}).status_code, 403)
+    def test_volucra_base_provides_the_preference_store(self):
+        self.assertIs(get_preference_store(), store)
 
     def test_saved_theme_is_rendered(self):
-        UserPreferences.objects.create(user=self.user, theme="dark")
+        UserPreferences.objects.create(user=self.user, values={THEME_KEY: "dark"})
         self.client.force_login(self.user)
         response = self.client.get("/groups/")
         self.assertContains(response, 'data-bs-theme="dark"')
         self.assertContains(response, 'data-tabler-ui-theme="dark"')
-        self.assertContains(response, 'data-tabler-ui-theme-url="/ui/theme/"')
+        self.assertContains(response, 'data-tabler-ui-theme-url="/preferences/"')
+        self.assertContains(response, 'data-tabler-ui-theme-key="tabler_ui.theme"')
         self.assertContains(response, "data-tabler-ui-csrf-token=")
 
     def test_users_without_preferences_use_the_theme_of_the_browser(self):
@@ -55,7 +36,7 @@ class ThemeTests(TestCase):
         response = self.client.get("/groups/")
         self.assertContains(response, 'data-bs-theme="light"')
         self.assertContains(response, 'data-tabler-ui-theme=""')
-        self.assertContains(response, 'data-tabler-ui-theme-url="/ui/theme/"')
+        self.assertContains(response, 'data-tabler-ui-theme-url="/preferences/"')
 
     def test_anonymous_users_dont_save_the_theme_on_the_server(self):
         response = self.client.get("/accounts/login/")
@@ -67,6 +48,31 @@ class ThemeTests(TestCase):
     def test_storage_key_is_configurable(self):
         response = self.client.get("/accounts/login/")
         self.assertContains(response, 'data-tabler-ui-storage-key="project_theme"')
+
+
+class ThemeWithoutPreferenceStoreTests(TestCase):
+    """Without volucra_base the theme is only kept in the browser"""
+
+    def setUp(self):
+        self.user = User.objects.create_user("user", password="password")
+        UserPreferences.objects.create(user=self.user, values={THEME_KEY: "dark"})
+        self.client.force_login(self.user)
+        self.installed_apps = [app for app in settings.INSTALLED_APPS if app != "volucra_base"]
+
+    def test_no_preference_store(self):
+        with self.settings(INSTALLED_APPS=self.installed_apps):
+            self.assertIsNone(get_preference_store())
+
+    def test_theme_is_only_kept_in_the_browser(self):
+        with self.settings(INSTALLED_APPS=self.installed_apps), CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/groups/")
+        self.assertContains(response, 'data-bs-theme="light"')
+        self.assertContains(response, 'data-tabler-ui-theme=""')
+        self.assertNotContains(response, "data-tabler-ui-theme-url")
+        self.assertNotContains(response, "data-tabler-ui-csrf-token")
+        self.assertFalse([q for q in queries.captured_queries if "volucra_base" in q["sql"]])
+        # The theme switcher is still there
+        self.assertContains(response, 'data-tabler-ui-set-theme="dark"', count=2)
 
 
 class LayoutTests(TestCase):

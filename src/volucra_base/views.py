@@ -1,5 +1,11 @@
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse, JsonResponse
+from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
 from django_tables2 import MultiTableMixin
+
+from .preferences import get_preferences
 
 
 class InitialCreateView(CreateView):
@@ -28,3 +34,21 @@ class FilteredMultiTableMixin(MultiTableMixin):
         context = super().get_context_data(**kwargs)
         context.update({"filters": self.filters})
         return context
+
+
+@require_POST
+def save_preferences(request):
+    """
+    Saves the preferences posted as form data (key=value) for the logged in user, e.g. the theme of the theme
+    switcher of tabler_ui. Answers with 204 or with the errors by key as JSON.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"errors": {"__all__": [_("Log in to save preferences.")]}}, status=403)
+    values = {key: value for key, value in request.POST.items() if key != "csrfmiddlewaretoken"}
+    if not values:
+        return JsonResponse({"errors": {"__all__": [_("No preferences were given.")]}}, status=400)
+    try:
+        get_preferences(request.user).update(values)
+    except ValidationError as error:
+        return JsonResponse({"errors": error.message_dict}, status=400)
+    return HttpResponse(status=204)

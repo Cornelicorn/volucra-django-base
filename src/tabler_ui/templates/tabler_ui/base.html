@@ -4,8 +4,7 @@
 
 {% get_current_language as LANGUAGE_CODE %}
 {% tabler_ui_setting "SITE_NAME" as site_name %}
-{% tabler_ui_theme as saved_theme %}
-{% url "tabler_ui:set-theme" as theme_url %}
+{% tabler_ui_theme_preference as theme %}
 
 {% autoescape on %}
     <!DOCTYPE html>
@@ -33,10 +32,10 @@
             {% endblock head %}
 
         </head>
-        <body data-bs-theme="{% if saved_theme == "dark" %}dark{% else %}light{% endif %}"
-              data-tabler-ui-theme="{{ saved_theme|default_if_none:"" }}"
+        <body data-bs-theme="{% if theme.saved == "dark" %}dark{% else %}light{% endif %}"
+              data-tabler-ui-theme="{{ theme.saved|default_if_none:"" }}"
               data-tabler-ui-storage-key="{% tabler_ui_setting "THEME_STORAGE_KEY" %}"
-              {% if user.is_authenticated and theme_url %}data-tabler-ui-theme-url="{{ theme_url }}" data-tabler-ui-csrf-token="{{ csrf_token }}"{% endif %}>
+              {% if theme.save_url %}data-tabler-ui-theme-url="{{ theme.save_url }}" data-tabler-ui-theme-key="{{ theme.key }}" data-tabler-ui-csrf-token="{{ csrf_token }}"{% endif %}>
             <script src="{% static "tabler_ui/js/theme.js" %}"></script>
 
             {% block body %}

@@ -1,7 +1,7 @@
 from django import template
 
 from ..conf import get_setting
-from ..models import UserPreferences
+from ..preferences import get_theme_preference
 
 register = template.Library()
 
@@ -13,13 +13,12 @@ def tabler_ui_setting(name):
 
 
 @register.simple_tag(takes_context=True)
-def tabler_ui_theme(context):
-    """Returns the theme saved in the preferences of the logged in user, or None if they haven't chosen one yet"""
-    request = context.get("request")
-    user = getattr(request, "user", None)
-    if user is None or not user.is_authenticated:
-        return None
-    return UserPreferences.objects.filter(user=user).values_list("theme", flat=True).first()
+def tabler_ui_theme_preference(context):
+    """
+    Returns the theme the logged in user saved (saved, None if they haven't saved one), where they can save it
+    (save_url, None if they can't) and under which key (key). Both are None without an app which stores preferences.
+    """
+    return get_theme_preference(context.get("request"))
 
 
 @register.filter

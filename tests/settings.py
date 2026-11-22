@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "social_django",
+    "tests.prefapp",
 ]
 
 MIDDLEWARE = [

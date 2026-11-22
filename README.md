@@ -10,10 +10,11 @@ Reusable building blocks for Django projects, split into two apps:
     modal, the `FilterForm` for filtersets, and `OpenColumn`, `EditColumn`, `DeleteColumn` and
     `HumanizedSecondsColumn`
   - login, logout, password change and password reset pages
-  - light, dark and auto theme with a switcher in the navbar
-  - `UserPreferences`, which keeps the preferences of each user (currently the theme) in the database, so they
-    follow the user across devices
-- **`volucra_base`**: views and the login with OpenID Connect
+  - light, dark and auto theme with a switcher in the navbar, kept in the browser
+  - no models or migrations
+- **`volucra_base`**: user preferences, views and the login with OpenID Connect
+  - `UserPreferences`: one row per user with the preferences all installed apps declare, e.g. the theme of
+    `tabler_ui`, which then follows the user across devices
   - login with OpenID Connect through [social-auth-app-django](https://python-social-auth.readthedocs.io), with a
     pipeline step that maps OIDC groups to Django groups, and an SSO button which it adds to the login pages of
     `tabler_ui` and the admin
@@ -79,7 +80,7 @@ TABLER_UI_SITE_NAME = "My Project"
 ```python
 urlpatterns = [
     path("accounts/", include("tabler_ui.account_urls")),  # without a namespace
-    path("ui/", include("tabler_ui.urls")),
+    path("", include("volucra_base.urls")),  # saving user preferences, at preferences/
     # ...
 ]
 ```
@@ -161,9 +162,42 @@ override of `tabler_ui/base.html` can add the stylesheets of the project to ever
 
 ### Theme
 
-The theme switcher saves the theme in the `UserPreferences` of logged in users and in the localStorage of the
-browser for everyone. When a user logs in on a new device, the saved theme replaces the one of the device. Users who
-haven't saved one yet keep the theme the device used so far.
+The theme switcher keeps the theme in the localStorage of the browser. With `volucra_base` installed, it saves it in
+the user preferences of logged in users as well. When a user logs in on a new device, the saved theme replaces the one
+of the device. Users who haven't saved one yet keep the theme the device used so far.
+
+### User preferences
+
+Any app can declare preferences in the attribute `user_preferences` of its `AppConfig`, as a dictionary of form fields.
+`volucra_base` collects them on startup and keeps the values each user chooses in one `UserPreferences` per user. The
+key of a preference is `<app label>.<name>`, its default is the `initial` value of its field:
+
+```python
+class ShopConfig(AppConfig):
+    name = "shop"
+    user_preferences: ClassVar[dict[str, forms.Field]] = {
+        "newsletter": forms.BooleanField(label=_("Newsletter"), required=False, initial=False),
+    }
+```
+
+An app which needs its models for the fields, e.g. for a `ModelChoiceField`, returns the dictionary from the method
+`get_user_preferences()` of its `AppConfig` instead, which is only called once the models are loaded.
+
+```python
+from volucra_base.preferences import get_preferences
+
+preferences = get_preferences(request.user)
+preferences["shop.newsletter"]  # the value the user chose or the default
+preferences.get_chosen("shop.newsletter")  # None if the user hasn't chosen one
+preferences.update({"shop.newsletter": True})  # validated with the form fields, raises a ValidationError otherwise
+```
+
+The view `volucra_base:save-preferences` (`preferences/`) saves the preferences posted as form data (`key=value`) for
+the logged in user, as the theme switcher does. It answers with 204, or with the errors by key as JSON. Values stored
+for preferences which are no longer declared, or which are no longer valid, are ignored.
+
+`tabler_ui` finds the store for its preferences in the attribute `user_preference_store` of an installed `AppConfig`,
+see `tabler_ui/preferences.py`. `volucra_base` provides it, without it `tabler_ui` keeps the theme in the browser only.
 
 ## Development
 
