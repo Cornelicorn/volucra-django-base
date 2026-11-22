@@ -25,7 +25,13 @@ button to the login page of `tabler_ui` and saves its theme in the user preferen
 
 ## Installation
 
-It needs Python 3.12 or newer and Django 6.1. Install it from GitHub with uv, pinned to a tag or commit:
+It needs Python 3.12 or newer and Django 6.1. Install it from PyPI:
+
+```sh
+uv add volucra-django-base
+```
+
+Or from GitHub, pinned to a tag or commit:
 
 ```sh
 uv add git+https://github.com/Cornelicorn/volucra-django-base --tag v0.1.0
@@ -213,6 +219,10 @@ uv run djlint --check src
 Set the new version in `pyproject.toml`, commit it and push a tag with the same version, e.g. `v0.2.0`. The release
 workflow then builds the package and drafts a GitHub release with the wheel, the source distribution and generated
 release notes, which only has to be published. It fails if the tag doesn't match the version in `pyproject.toml`.
+
+Publishing the release starts the publish workflow, which uploads the wheel and the source distribution of the release
+to PyPI with [Trusted Publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored in the
+repository. It runs in the GitHub environment `pypi`, which can require an approval before the upload.
 
 ### Dependency updates
 

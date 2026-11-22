@@ -12,6 +12,10 @@ dependencies = [
     "django-tables2>=3.0.1,<4",
 ]
 
+[project.urls]
+Repository = "https://github.com/Cornelicorn/volucra-django-base"
+Releases = "https://github.com/Cornelicorn/volucra-django-base/releases"
+
 [project.optional-dependencies]
 # Login with OpenID Connect, see volucra_base.auth_pipeline
 sso = [
