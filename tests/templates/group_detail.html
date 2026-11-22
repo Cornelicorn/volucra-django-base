@@ -1,0 +1,5 @@
+{% extends "tabler_ui/generic/object_detail.html" %}
+
+{% block specific_content %}
+    {% include "tabler_ui/tables/table_card.html" with table=tables.0 filter=filters.0 id_filter_modal="id_filter_users" table_heading="Users" %}
+{% endblock specific_content %}

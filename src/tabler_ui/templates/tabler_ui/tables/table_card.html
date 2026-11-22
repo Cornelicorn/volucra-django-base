@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% include "tabler_ui/tables/filter_modal.html" %}
+
+<div class="card mb-4">
+    {% if table_heading %}
+        <div class="card-header">
+            <h2 class="card-title">{{ table_heading }}</h2>
+            <div class="card-actions">{% include "tabler_ui/tables/filter_button.html" %}</div>
+        </div>
+    {% endif %}
+
+    {% if table.paginated_rows %}
+        {% render_table table %}
+    {% else %}
+        {% include "tabler_ui/tables/table_empty.html" %}
+    {% endif %}
+
+</div>

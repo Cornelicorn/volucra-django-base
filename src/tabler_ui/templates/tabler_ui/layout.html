@@ -1,0 +1,22 @@
+{% extends "tabler_ui/base.html" %}
+
+{% block body %}
+    <div class="antialiased">
+        <div class="page">
+
+            {% block navbar %}
+                {% include "tabler_ui/navbar.html" %}
+            {% endblock navbar %}
+
+            <div class="content">
+                <div class="container-xl">
+                    <br>
+
+                    {% block content %}
+                    {% endblock content %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

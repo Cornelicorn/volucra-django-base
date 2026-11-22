@@ -1,0 +1,15 @@
+{% extends "tabler_ui/error.html" %}
+
+{% load i18n %}
+
+{% block status_code %}
+    400
+{% endblock status_code %}
+
+{% block error_title %}
+    {% trans "Bad Request" %}
+{% endblock error_title %}
+
+{% block error_subtitle %}
+    {% trans "The server could not understand your request." %}
+{% endblock error_subtitle %}

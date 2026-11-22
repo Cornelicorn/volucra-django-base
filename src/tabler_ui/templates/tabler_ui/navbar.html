@@ -1,0 +1,80 @@
+{% load i18n %}
+{% load tabler_ui %}
+
+{% comment %}
+    Override this template with one which extends it to fill the blocks, e.g. navbar_menu with
+    <li class="nav-item"><a href="..." class="nav-link">...</a></li> entries
+{% endcomment %}
+
+<header class="navbar navbar-expand-md navbar-light">
+    <div class="container-xl">
+
+        {% block navbar_brand %}
+            <a class="navbar-brand" href="/">{% tabler_ui_setting "SITE_NAME" %}</a>
+        {% endblock navbar_brand %}
+
+        <div class="d-md-none dropdown ms-auto me-2 nav-item">
+            {% include "tabler_ui/includes/theme_switcher.html" with dropdown_id="id_theme_dropdown_mobile" %}
+        </div>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbar-menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse" id="navbar-menu">
+            <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
+                <ul class="navbar-nav">
+
+                    {% block navbar_menu %}
+                    {% endblock navbar_menu %}
+
+                </ul>
+            </div>
+
+            <div class="nav-item navbar-nav order-last">
+                <div class="nav-item dropdown">
+                    {% include "tabler_ui/includes/theme_switcher.html" with dropdown_id="id_theme_dropdown" %}
+                </div>
+
+                {% block account_menu %}
+                    {% if user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a href="#"
+                               class="nav-link dropdown-toggle"
+                               data-bs-toggle="dropdown"
+                               role="button"
+                               aria-haspopup="true"
+                               aria-expanded="false">{% trans "Account" %}</a>
+                            <div class="dropdown-menu dropdown-menu-end" data-bs-popper="none">
+
+                                {% block account_menu_items %}
+                                    {% url "admin:index" as admin_url %}
+                                    {% url "password_change" as password_change_url %}
+                                    {% url "logout" as logout_url %}
+                                    {% if user.is_staff and admin_url %}
+                                        <a href="{{ admin_url }}" class="dropdown-item">{% trans "Admin" %}</a>
+                                        <div class="dropdown-divider"></div>
+                                    {% endif %}
+                                    {% if password_change_url %}
+                                        <a href="{{ password_change_url }}"
+                                           class="dropdown-item">{% trans "Change Password" %}</a>
+                                    {% endif %}
+                                    {% if logout_url %}
+                                        <form id="logout-form" method="post" action="{{ logout_url }}">
+                                            {% csrf_token %}
+                                            <button class="dropdown-item" type="submit">{% trans "Log out" %}</button>
+                                        </form>
+                                    {% endif %}
+                                {% endblock account_menu_items %}
+
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endblock account_menu %}
+
+            </div>
+        </div>
+    </div>
+</header>

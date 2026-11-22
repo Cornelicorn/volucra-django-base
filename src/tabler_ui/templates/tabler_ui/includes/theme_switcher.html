@@ -1,0 +1,26 @@
+{% load i18n %}
+
+<a id="{{ dropdown_id }}"
+   href="#"
+   class="nav-link dropdown-toggle"
+   data-bs-toggle="dropdown"
+   role="button"
+   aria-haspopup="true"
+   aria-expanded="false"
+   aria-label="{% trans "Theme" %}"
+   title="{% trans "Theme" %}">
+    <i class="ti ti-sun-moon" data-tabler-ui-theme-icon></i>
+</a>
+<div class="dropdown-menu dropdown-menu-end"
+     data-bs-popper="none"
+     aria-labelledby="{{ dropdown_id }}">
+    <button type="button" class="dropdown-item" data-tabler-ui-set-theme="auto">
+        {% trans "Auto" %} <i class="ti ti-sun-moon ms-2"></i>
+    </button>
+    <button type="button" class="dropdown-item" data-tabler-ui-set-theme="light">
+        {% trans "Light" %} <i class="ti ti-sun ms-2"></i>
+    </button>
+    <button type="button" class="dropdown-item" data-tabler-ui-set-theme="dark">
+        {% trans "Dark" %} <i class="ti ti-moon ms-2"></i>
+    </button>
+</div>

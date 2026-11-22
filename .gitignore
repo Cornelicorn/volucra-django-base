@@ -1,0 +1,7 @@
+*.py[oc]
+__pycache__/
+*.mo
+/.venv
+/dist
+/build
+*.egg-info

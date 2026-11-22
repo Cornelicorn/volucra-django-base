@@ -1,0 +1,7 @@
+{% load tabler_ui %}
+
+{% if value %}
+    {{ value | humanize_seconds }}
+{% else %}
+    {{ value }}
+{% endif %}

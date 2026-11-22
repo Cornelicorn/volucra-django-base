@@ -1,0 +1,16 @@
+{% extends "tabler_ui/registration/login.html" %}
+
+{% comment %}
+    Adds the login with OpenID Connect to the login page of tabler_ui, volucra_base has to come before tabler_ui in
+    INSTALLED_APPS for this template to be used
+{% endcomment %}
+
+{% block login_footer %}
+    {{ block.super }}
+    {% if use_sso %}
+        <form method="post" action="{% url "social:begin" "oidc" %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary w-100 mt-4">{{ sso_label }}</button>
+        </form>
+    {% endif %}
+{% endblock login_footer %}

@@ -1,0 +1,52 @@
+{% load static %}
+{% load i18n %}
+{% load tabler_ui %}
+
+{% get_current_language as LANGUAGE_CODE %}
+{% tabler_ui_setting "SITE_NAME" as site_name %}
+{% tabler_ui_theme as saved_theme %}
+{% url "tabler_ui:set-theme" as theme_url %}
+
+{% autoescape on %}
+    <!DOCTYPE html>
+    <html lang="{{ LANGUAGE_CODE }}">
+        <head>
+            <meta charset="utf-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>
+
+                {% block title %}
+                    {{ site_name }}
+                {% endblock title %}
+
+            </title>
+
+            {% block stylesheets %}
+                <link href="{% static "tabler_ui/dist/css/tabler.min.css" %}" rel="stylesheet" />
+                <link href="{% static "tabler_ui/dist/tabler-icons/tabler-icons.min.css" %}"
+                      rel="stylesheet" />
+                <link href="{% static "tabler_ui/css/tabler_ui.css" %}" rel="stylesheet" />
+            {% endblock stylesheets %}
+
+            {% block head %}
+            {% endblock head %}
+
+        </head>
+        <body data-bs-theme="{% if saved_theme == "dark" %}dark{% else %}light{% endif %}"
+              data-tabler-ui-theme="{{ saved_theme|default_if_none:"" }}"
+              data-tabler-ui-storage-key="{% tabler_ui_setting "THEME_STORAGE_KEY" %}"
+              {% if user.is_authenticated and theme_url %}data-tabler-ui-theme-url="{{ theme_url }}" data-tabler-ui-csrf-token="{{ csrf_token }}"{% endif %}>
+            <script src="{% static "tabler_ui/js/theme.js" %}"></script>
+
+            {% block body %}
+            {% endblock body %}
+
+            <script src="{% static "tabler_ui/dist/js/tabler.min.js" %}"></script>
+
+            {% block scripts %}
+            {% endblock scripts %}
+
+        </body>
+    </html>
+{% endautoescape %}
