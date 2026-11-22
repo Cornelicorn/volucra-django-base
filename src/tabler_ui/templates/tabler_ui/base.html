@@ -8,7 +8,8 @@
 
 {% autoescape on %}
     <!DOCTYPE html>
-    <html lang="{{ LANGUAGE_CODE }}">
+    {# The theme attributes belong to <html>, as Tabler derives its colors from the gray scale on :root #}
+    <html lang="{{ LANGUAGE_CODE }}"{% tabler_ui_theme_attributes %}>
         <head>
             <meta charset="utf-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -23,6 +24,7 @@
 
             {% block stylesheets %}
                 <link href="{% static "tabler_ui/dist/css/tabler.min.css" %}" rel="stylesheet" />
+                <link href="{% static "tabler_ui/dist/css/tabler-themes.min.css" %}" rel="stylesheet" />
                 <link href="{% static "tabler_ui/dist/tabler-icons/tabler-icons.min.css" %}"
                       rel="stylesheet" />
                 <link href="{% static "tabler_ui/css/tabler_ui.css" %}" rel="stylesheet" />

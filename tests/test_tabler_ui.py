@@ -56,6 +56,24 @@ class ThemeTests(TestCase):
         response = self.client.get("/accounts/login/")
         self.assertContains(response, 'data-tabler-ui-storage-key="project_theme"')
 
+    def test_gray_scale_of_tabler_up_to_1_5_by_default(self):
+        response = self.client.get("/accounts/login/")
+        self.assertContains(response, '<html lang="en-us" data-bs-theme-base="gray">')
+        self.assertContains(response, "tabler-themes.min.css")
+
+    @override_settings(
+        TABLER_UI_THEME_BASE=None,
+        TABLER_UI_THEME_PRIMARY="red",
+        TABLER_UI_THEME_RADIUS="0.5",
+        TABLER_UI_THEME_FONT="serif",
+    )
+    def test_theme_settings(self):
+        response = self.client.get("/accounts/login/")
+        self.assertContains(
+            response,
+            '<html lang="en-us" data-bs-theme-primary="red" data-bs-theme-radius="0.5" data-bs-theme-font="serif">',
+        )
+
 
 class ThemeWithoutVolucraBaseTests(TestCase):
     """Without volucra_base the theme is only kept in the browser"""

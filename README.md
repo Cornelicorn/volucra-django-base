@@ -92,6 +92,10 @@ Then run `python manage.py migrate` to create the table of the user preferences.
 | -------------------------------- | ------------------- | ------------------------------------------------------------------------ |
 | `TABLER_UI_SITE_NAME`            | `"Django"`          | Page title and brand of the navbar                                       |
 | `TABLER_UI_THEME_STORAGE_KEY`    | `"tabler_ui_theme"` | localStorage key the browser keeps the theme in                          |
+| `TABLER_UI_THEME_BASE`           | `"gray"`            | Gray scale of the theme, see [Theme](#theme)                             |
+| `TABLER_UI_THEME_PRIMARY`        | `None`              | Primary color of the theme, see [Theme](#theme)                          |
+| `TABLER_UI_THEME_RADIUS`         | `None`              | Scale of the corner radii, see [Theme](#theme)                           |
+| `TABLER_UI_THEME_FONT`           | `None`              | Font of the theme, see [Theme](#theme)                                   |
 | `VOLUCRA_SSO_LABEL`              | `"Volucra SSO"`     | Label of the SSO button on the login pages                               |
 | `SOCIAL_AUTH_OIDC_OIDC_ENDPOINT` | unset               | The SSO button is shown once this is set                                 |
 | `ADMIN_GROUP`                    | `None`              | OIDC group whose members become staff and superusers, `None` to not sync |
@@ -164,6 +168,18 @@ override of `tabler_ui/base.html` can add the stylesheets of the project to ever
 The theme switcher keeps the theme in the localStorage of the browser. If `volucra_base` is installed and in
 `INSTALLED_APPS`, it saves it in the user preferences of logged in users as well. When a user logs in on a new device,
 the saved theme replaces the one of the device. Users who haven't saved one yet keep the theme the device used so far.
+
+The settings `TABLER_UI_THEME_*` choose the look of the theme with the attributes of `tabler-themes.css`, `None`
+leaves the default of Tabler:
+
+- `TABLER_UI_THEME_BASE`: `"gray"`, `"slate"`, `"zinc"`, `"neutral"`, `"stone"` or `"mist"`
+- `TABLER_UI_THEME_PRIMARY`: `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`,
+  `"lime"`, `"green"`, `"teal"`, `"cyan"` or `"inverted"`
+- `TABLER_UI_THEME_RADIUS`: `"0"`, `"0.5"`, `"1"`, `"1.5"` or `"2"`, as strings
+- `TABLER_UI_THEME_FONT`: `"sans-serif"`, `"serif"`, `"monospace"` or `"comic"`
+
+`TABLER_UI_THEME_BASE` defaults to `"gray"`, the blue tinted gray scale of Tabler up to 1.5. Tabler 1.6 changed its
+default to `"neutral"`, set `TABLER_UI_THEME_BASE = None` for it.
 
 ### User preferences
 
