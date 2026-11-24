@@ -95,14 +95,22 @@ class Preferences:
     """
     The preferences of one user. Reading a preference returns the value the user chose or its default, the values
     of anonymous users are always the defaults and can't be changed.
+
+    The row of the user is read through user.preferences, which Django caches on the user object, also if there is
+    none, so the preferences are loaded once per user object, e.g. once per request for request.user.
     """
 
     def __init__(self, user):
         self.user = user
-        self._values: dict[str, Any] = {}
-        if user.is_authenticated:
-            instance = UserPreferences.objects.filter(user=user).first()
-            self._values = instance.values if instance else {}
+
+    @property
+    def _values(self) -> dict[str, Any]:
+        if not self.user.is_authenticated:
+            return {}
+        try:
+            return self.user.preferences.values
+        except UserPreferences.DoesNotExist:
+            return {}
 
     def get_chosen(self, key: str) -> Any:
         """The value the user chose for the preference, None if they haven't chosen a valid one"""
@@ -141,18 +149,13 @@ class Preferences:
             instance, _created = UserPreferences.objects.select_for_update().get_or_create(user=self.user)
             instance.values.update(cleaned)
             instance.save(update_fields=["values"])
-        self._values = instance.values
+        # A row which already existed isn't the one cached on the user object, so replace that
+        self.user.preferences = instance
 
 
 def get_preferences(user) -> Preferences:
-    """The preferences of the user, loaded once per user object, e.g. once per request for request.user"""
-    # Cached in an attribute of the user object, as Django's ModelBackend caches the permissions in user._perm_cache.
-    # The prefix keeps it apart from the fields of custom user models.
-    preferences = getattr(user, "_volucra_base_preferences", None)
-    if preferences is None:
-        preferences = Preferences(user)
-        user._volucra_base_preferences = preferences
-    return preferences
+    """The preferences of the user, see Preferences"""
+    return Preferences(user)
 
 
 def get_save_url() -> str | None:

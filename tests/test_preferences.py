@@ -95,7 +95,24 @@ class PreferencesTests(TestCase):
             get_preferences(self.user)["shop.newsletter"]
 
     def test_preferences_are_loaded_once_per_user_object(self):
-        self.assertIs(get_preferences(self.user), get_preferences(self.user))
+        UserPreferences.objects.create(user=self.user, values={"tabler_ui.theme": "dark"})
+        for user in User.objects.get(pk=self.user.pk), self.user_without_preferences():
+            with self.subTest(user=user.username), self.assertNumQueries(1):
+                get_preferences(user)["tabler_ui.theme"]
+                get_preferences(user)["prefapp.page_size"]
+
+    def test_changes_are_seen_by_the_user_object(self):
+        UserPreferences.objects.create(user=self.user, values={"tabler_ui.theme": "dark"})
+        for user in User.objects.get(pk=self.user.pk), self.user_without_preferences():
+            with self.subTest(user=user.username):
+                # Caches the row of the user, or that there is none, on the user object
+                get_preferences(user)["tabler_ui.theme"]
+                get_preferences(user).update({"tabler_ui.theme": "light"})
+                with self.assertNumQueries(0):
+                    self.assertEqual(get_preferences(user)["tabler_ui.theme"], "light")
+
+    def user_without_preferences(self):
+        return User.objects.create_user("other", password="password")
 
     def test_anonymous_users_have_the_defaults(self):
         preferences = get_preferences(AnonymousUser())
