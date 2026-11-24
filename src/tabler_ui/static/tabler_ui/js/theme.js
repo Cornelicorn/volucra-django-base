@@ -2,9 +2,9 @@
  * Applies the light, dark or auto theme. Include it at the start of the body, so the page is never shown in the
  * wrong theme.
  *
- * The choice of the theme switcher is kept in the localStorage of the browser. If an installed app stores the
- * preferences of users, e.g. volucra_base, it is saved in the preferences of logged in users as well, which take
- * precedence, so the theme follows them to other devices. The body provides:
+ * The choice of the theme switcher is kept in the localStorage of the browser. If volucra_base is installed and
+ * enabled, it is saved in the preferences of logged in users as well, which take precedence, so the theme follows them
+ * to other devices. The body provides:
  *   data-tabler-ui-storage-key  key of the localStorage entry
  *   data-tabler-ui-theme        theme saved in the preferences of the user, empty if there is none
  *   data-tabler-ui-theme-url    URL to save the theme at, only if the user can save preferences

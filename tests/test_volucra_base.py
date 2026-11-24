@@ -1,10 +1,12 @@
 from types import SimpleNamespace
 
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.core.checks import run_checks
 from django.test import TestCase, override_settings
 
 from volucra_base.auth_pipeline.oidc import assign_groups_and_attributes
+from volucra_base.preferences import registry
 
 
 class SSOTests(TestCase):
@@ -57,6 +59,17 @@ class AppOrderCheckTests(TestCase):
         self.assertEqual(len(warnings), 2)
         self.assertIn("before tabler_ui", warnings[0].hint)
         self.assertIn("before django.contrib.admin", warnings[1].hint)
+
+
+class WithoutTablerUITests(TestCase):
+    @override_settings(SOCIAL_AUTH_OIDC_OIDC_ENDPOINT="https://sso.example.com")
+    def test_volucra_base_on_its_own(self):
+        installed_apps = [app for app in settings.INSTALLED_APPS if app != "tabler_ui"]
+        with self.settings(INSTALLED_APPS=installed_apps):
+            self.assertNotIn("tabler_ui.theme", registry)
+            self.assertIn("prefapp.page_size", registry)
+            self.assertEqual([e.id for e in run_checks() if e.id.startswith("volucra_base")], [])
+            self.assertContains(self.client.get("/admin/login/"), 'action="/login/oidc/"')
 
 
 class OIDCPipelineTests(TestCase):

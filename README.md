@@ -20,7 +20,8 @@ Reusable building blocks for Django projects, split into two apps:
     `tabler_ui` and the admin
   - `InitialCreateView`, `FilteredMultiTableMixin` and `ExcludeFilterSet`
 
-`volucra_base` builds on `tabler_ui`. `tabler_ui` can be used on its own.
+Both apps can be used on their own. If both are installed and in `INSTALLED_APPS`, `volucra_base` adds the SSO
+button to the login page of `tabler_ui` and saves its theme in the user preferences.
 
 ## Installation
 
@@ -162,9 +163,9 @@ override of `tabler_ui/base.html` can add the stylesheets of the project to ever
 
 ### Theme
 
-The theme switcher keeps the theme in the localStorage of the browser. With `volucra_base` installed, it saves it in
-the user preferences of logged in users as well. When a user logs in on a new device, the saved theme replaces the one
-of the device. Users who haven't saved one yet keep the theme the device used so far.
+The theme switcher keeps the theme in the localStorage of the browser. If `volucra_base` is installed and in
+`INSTALLED_APPS`, it saves it in the user preferences of logged in users as well. When a user logs in on a new device,
+the saved theme replaces the one of the device. Users who haven't saved one yet keep the theme the device used so far.
 
 ### User preferences
 
@@ -196,8 +197,8 @@ The view `volucra_base:save-preferences` (`preferences/`) saves the preferences 
 the logged in user, as the theme switcher does. It answers with 204, or with the errors by key as JSON. Values stored
 for preferences which are no longer declared, or which are no longer valid, are ignored.
 
-`tabler_ui` finds the store for its preferences in the attribute `user_preference_store` of an installed `AppConfig`,
-see `tabler_ui/preferences.py`. `volucra_base` provides it, without it `tabler_ui` keeps the theme in the browser only.
+`volucra_base.preferences.get_save_url()` returns the URL of the view, or `None` if the project didn't include
+`volucra_base.urls`. Without volucra_base or its URLs, `tabler_ui` keeps the theme in the browser only.
 
 ## Development
 

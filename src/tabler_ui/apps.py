@@ -9,8 +9,8 @@ class TablerUIConfig(AppConfig):
     name = "tabler_ui"
     verbose_name = _("Tabler UI")
 
-    # tabler_ui keeps no data itself. An installed app with a preference store, e.g. volucra_base, saves these
-    # preferences for logged in users, see tabler_ui.preferences
+    # tabler_ui keeps no data itself. If volucra_base is installed and enabled, it saves these preferences for logged
+    # in users, otherwise the theme is only kept in the browser
     user_preferences: ClassVar[dict[str, forms.Field]] = {
         "theme": forms.ChoiceField(
             label=_("Theme"),

@@ -1,15 +1,16 @@
+import sys
+from unittest import mock
+
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import connection
 from django.template import Context, Template
 from django.template.loader import render_to_string
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 
-from tabler_ui.preferences import THEME_KEY, get_preference_store
-from tabler_ui.templatetags.tabler_ui import humanize_seconds, startswith
+from tabler_ui.templatetags.tabler_ui import humanize_seconds, startswith, tabler_ui_theme_preference
 from volucra_base.models import UserPreferences
-from volucra_base.preferences import store
 
 
 class ThemeTests(TestCase):
@@ -18,11 +19,8 @@ class ThemeTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user("user", password="password")
 
-    def test_volucra_base_provides_the_preference_store(self):
-        self.assertIs(get_preference_store(), store)
-
     def test_saved_theme_is_rendered(self):
-        UserPreferences.objects.create(user=self.user, values={THEME_KEY: "dark"})
+        UserPreferences.objects.create(user=self.user, values={"tabler_ui.theme": "dark"})
         self.client.force_login(self.user)
         response = self.client.get("/groups/")
         self.assertContains(response, 'data-bs-theme="dark"')
@@ -44,26 +42,31 @@ class ThemeTests(TestCase):
         self.assertNotContains(response, "data-tabler-ui-theme-url")
         self.assertNotContains(response, "data-tabler-ui-csrf-token")
 
+    @override_settings(ROOT_URLCONF="tests.urls_without_preferences")
+    def test_theme_is_only_kept_in_the_browser_without_the_urls_of_volucra_base(self):
+        UserPreferences.objects.create(user=self.user, values={"tabler_ui.theme": "dark"})
+        self.client.force_login(self.user)
+        response = self.client.get("/groups/")
+        self.assertContains(response, 'data-bs-theme="light"')
+        self.assertContains(response, 'data-tabler-ui-theme=""')
+        self.assertNotContains(response, "data-tabler-ui-theme-url")
+
     @override_settings(TABLER_UI_THEME_STORAGE_KEY="project_theme")
     def test_storage_key_is_configurable(self):
         response = self.client.get("/accounts/login/")
         self.assertContains(response, 'data-tabler-ui-storage-key="project_theme"')
 
 
-class ThemeWithoutPreferenceStoreTests(TestCase):
+class ThemeWithoutVolucraBaseTests(TestCase):
     """Without volucra_base the theme is only kept in the browser"""
 
     def setUp(self):
         self.user = User.objects.create_user("user", password="password")
-        UserPreferences.objects.create(user=self.user, values={THEME_KEY: "dark"})
+        UserPreferences.objects.create(user=self.user, values={"tabler_ui.theme": "dark"})
         self.client.force_login(self.user)
         self.installed_apps = [app for app in settings.INSTALLED_APPS if app != "volucra_base"]
 
-    def test_no_preference_store(self):
-        with self.settings(INSTALLED_APPS=self.installed_apps):
-            self.assertIsNone(get_preference_store())
-
-    def test_theme_is_only_kept_in_the_browser(self):
+    def test_theme_is_only_kept_in_the_browser_if_volucra_base_isnt_enabled(self):
         with self.settings(INSTALLED_APPS=self.installed_apps), CaptureQueriesContext(connection) as queries:
             response = self.client.get("/groups/")
         self.assertContains(response, 'data-bs-theme="light"')
@@ -73,6 +76,15 @@ class ThemeWithoutPreferenceStoreTests(TestCase):
         self.assertFalse([q for q in queries.captured_queries if "volucra_base" in q["sql"]])
         # The theme switcher is still there
         self.assertContains(response, 'data-tabler-ui-set-theme="dark"', count=2)
+
+    def test_theme_is_only_kept_in_the_browser_if_volucra_base_isnt_installed(self):
+        # Importing volucra_base fails, as if it weren't installed
+        missing = {name: None for name in sys.modules if name.split(".")[0] == "volucra_base"}
+        request = RequestFactory().get("/groups/")
+        request.user = self.user
+        with self.settings(INSTALLED_APPS=self.installed_apps), mock.patch.dict(sys.modules, missing):
+            theme = tabler_ui_theme_preference({"request": request})
+        self.assertEqual(theme, {"key": "tabler_ui.theme", "saved": None, "save_url": None})
 
 
 class LayoutTests(TestCase):

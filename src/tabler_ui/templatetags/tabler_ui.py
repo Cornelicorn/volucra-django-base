@@ -1,9 +1,11 @@
 from django import template
+from django.apps import apps
 
 from ..conf import get_setting
-from ..preferences import get_theme_preference
 
 register = template.Library()
+
+THEME_KEY = "tabler_ui.theme"
 
 
 @register.simple_tag
@@ -16,9 +18,23 @@ def tabler_ui_setting(name):
 def tabler_ui_theme_preference(context):
     """
     Returns the theme the logged in user saved (saved, None if they haven't saved one), where they can save it
-    (save_url, None if they can't) and under which key (key). Both are None without an app which stores preferences.
+    (save_url, None if they can't) and under which key (key). If volucra_base is installed and enabled, the theme is
+    saved in the preferences of the user, otherwise both are None and the theme is only kept in the browser.
     """
-    return get_theme_preference(context.get("request"))
+    theme = {"key": THEME_KEY, "saved": None, "save_url": None}
+    user = getattr(context.get("request"), "user", None)
+    # is_installed() is False if volucra_base isn't installed or isn't in INSTALLED_APPS. It's checked instead of catching
+    # an ImportError, as volucra_base can be imported while it isn't in INSTALLED_APPS, its models then raise a
+    # RuntimeError.
+    if user is not None and user.is_authenticated and apps.is_installed("volucra_base"):
+        from volucra_base.preferences import get_preferences, get_save_url
+
+        save_url = get_save_url()
+        # If the project didn't include the URLs of volucra_base, the theme is only kept in the browser, so the theme
+        # switcher can change it
+        if save_url is not None:
+            theme.update(saved=get_preferences(user).get_chosen(THEME_KEY), save_url=save_url)
+    return theme
 
 
 @register.filter

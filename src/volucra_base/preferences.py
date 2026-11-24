@@ -146,6 +146,8 @@ class Preferences:
 
 def get_preferences(user) -> Preferences:
     """The preferences of the user, loaded once per user object, e.g. once per request for request.user"""
+    # Cached in an attribute of the user object, as Django's ModelBackend caches the permissions in user._perm_cache.
+    # The prefix keeps it apart from the fields of custom user models.
     preferences = getattr(user, "_volucra_base_preferences", None)
     if preferences is None:
         preferences = Preferences(user)
@@ -153,24 +155,12 @@ def get_preferences(user) -> Preferences:
     return preferences
 
 
-class PreferenceStore:
-    """Lets tabler_ui read and save the preferences it declares, see tabler_ui.preferences"""
-
-    def get_chosen(self, request, key: str) -> Any:
-        user = getattr(request, "user", None)
-        if user is None or not user.is_authenticated:
-            return None
-        return get_preferences(user).get_chosen(key)
-
-    def get_save_url(self, request) -> str | None:
-        user = getattr(request, "user", None)
-        if user is None or not user.is_authenticated:
-            return None
-        try:
-            return reverse("volucra_base:save-preferences")
-        except NoReverseMatch:
-            # The project didn't include volucra_base.urls
-            return None
-
-
-store = PreferenceStore()
+def get_save_url() -> str | None:
+    """
+    The URL logged in users can POST their preferences to as form data (key=value), None if the project didn't
+    include volucra_base.urls
+    """
+    try:
+        return reverse("volucra_base:save-preferences")
+    except NoReverseMatch:
+        return None

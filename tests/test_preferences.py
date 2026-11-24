@@ -4,11 +4,11 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ImproperlyConfigured, ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from volucra_base.admin import UserPreferencesForm
 from volucra_base.models import UserPreferences
-from volucra_base.preferences import PreferenceRegistry, get_preferences, registry
+from volucra_base.preferences import PreferenceRegistry, get_preferences, get_save_url, registry
 
 
 class RegistryTests(TestCase):
@@ -137,6 +137,11 @@ class SavePreferencesViewTests(TestCase):
         response = self.client.post("/preferences/", {"tabler_ui.theme": "dark"})
         self.assertEqual(response.status_code, 403)
         self.assertFalse(UserPreferences.objects.exists())
+
+    def test_save_url(self):
+        self.assertEqual(get_save_url(), "/preferences/")
+        with override_settings(ROOT_URLCONF="tests.urls_without_preferences"):
+            self.assertIsNone(get_save_url())
 
     def test_only_post(self):
         self.client.force_login(self.user)
