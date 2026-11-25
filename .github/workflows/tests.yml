@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Django tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Install the dependencies
+        run: uv sync --locked
+
+      - name: Run the tests
+        run: uv run python -m django test --settings=tests.settings --pythonpath=.
