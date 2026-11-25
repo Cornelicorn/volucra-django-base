@@ -31,13 +31,6 @@ It needs Python 3.12 or newer and Django 6.1. Install it from PyPI:
 uv add volucra-django-base
 ```
 
-Or from GitHub, pinned to a tag or commit:
-
-```sh
-uv add git+https://github.com/Cornelicorn/volucra-django-base --tag v0.1.0
-uv add git+https://github.com/Cornelicorn/volucra-django-base --rev <commit>
-```
-
 Add the extra `sso` (`volucra-django-base[sso]`) to get social-auth-app-django for the login with OpenID Connect.
 
 ## Setup
