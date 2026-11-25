@@ -16,7 +16,7 @@ or return it from its method get_user_preferences() if they need their models fo
     preferences.update({"shop.newsletter": True})
 """
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator, Mapping, Sequence
 from types import MappingProxyType
 from typing import Any
 
@@ -27,6 +27,7 @@ from django.core.signals import setting_changed
 from django.db import transaction
 from django.dispatch import receiver
 from django.urls import NoReverseMatch, reverse
+from django.utils.functional import Promise
 from django.utils.translation import gettext_lazy as _
 
 from .models import UserPreferences
@@ -131,7 +132,7 @@ class Preferences:
         """Validates and saves the given preferences, raises a ValidationError with the errors by key otherwise"""
         if not self.user.is_authenticated:
             raise ValueError("The preferences of anonymous users can't be saved.")
-        errors = {}
+        errors: dict[str, Sequence[str | Promise]] = {}
         cleaned = {}
         for key, value in values.items():
             if key not in registry:
