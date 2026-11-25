@@ -16,12 +16,14 @@ or return it from its method get_user_preferences() if they need their models fo
     preferences.update({"shop.newsletter": True})
 """
 
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from types import MappingProxyType
 from typing import Any
 
 from django import forms
-from django.apps import apps
+from django.apps import AppConfig, apps
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.signals import setting_changed
 from django.db import transaction
@@ -48,7 +50,7 @@ class PreferenceRegistry(Mapping):
         self._fields = None
 
     @staticmethod
-    def collect(app_configs) -> Mapping[str, forms.Field]:
+    def collect(app_configs: Iterable[AppConfig]) -> Mapping[str, forms.Field]:
         fields = {}
         for config in app_configs:
             get_declared = getattr(config, "get_user_preferences", None)
@@ -128,7 +130,7 @@ class Preferences:
         value = self.get_chosen(key)
         return get_default(registry[key]) if value is None else value
 
-    def update(self, values: Mapping[str, Any]):
+    def update(self, values: Mapping[str, Any]) -> None:
         """Validates and saves the given preferences, raises a ValidationError with the errors by key otherwise"""
         if not self.user.is_authenticated:
             raise ValueError("The preferences of anonymous users can't be saved.")
@@ -154,7 +156,7 @@ class Preferences:
         self.user.preferences = instance
 
 
-def get_preferences(user) -> Preferences:
+def get_preferences(user: AbstractBaseUser | AnonymousUser) -> Preferences:
     """The preferences of the user, see Preferences"""
     return Preferences(user)
 

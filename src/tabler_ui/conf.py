@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.conf import settings
 
 DEFAULTS = {
@@ -8,6 +10,6 @@ DEFAULTS = {
 }
 
 
-def get_setting(name: str):
+def get_setting(name: str) -> Any:
     """Returns the setting TABLER_UI_<name> or its default"""
     return getattr(settings, f"TABLER_UI_{name}", DEFAULTS[name])
