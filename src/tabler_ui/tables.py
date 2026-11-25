@@ -1,4 +1,5 @@
 import django_tables2 as tables
+from django.utils.functional import Promise
 from django.utils.translation import gettext_lazy as _
 
 
@@ -8,7 +9,7 @@ class ButtonColumn(tables.TemplateColumn):
     url_target.
     """
 
-    def __init__(self, template_name: str, url_target: str, verbose_name: str):
+    def __init__(self, template_name: str, url_target: str, verbose_name: str | Promise):
         super().__init__(
             template_name=template_name,
             verbose_name=verbose_name,
@@ -24,21 +25,21 @@ class ButtonColumn(tables.TemplateColumn):
 class OpenColumn(ButtonColumn):
     """Links to url_target with the id of the record, e.g. its detail page"""
 
-    def __init__(self, url_target: str, verbose_name: str = _("Open")):
+    def __init__(self, url_target: str, verbose_name: str | Promise = _("Open")):
         super().__init__("tabler_ui/tables/columns/open.html", url_target, verbose_name)
 
 
 class EditColumn(ButtonColumn):
     """Links to url_target with the id of the record, e.g. its edit page"""
 
-    def __init__(self, url_target: str, verbose_name: str = _("Edit")):
+    def __init__(self, url_target: str, verbose_name: str | Promise = _("Edit")):
         super().__init__("tabler_ui/tables/columns/edit.html", url_target, verbose_name)
 
 
 class DeleteColumn(ButtonColumn):
     """Links to url_target with the id of the record, e.g. its delete page"""
 
-    def __init__(self, url_target: str, verbose_name: str = _("Delete")):
+    def __init__(self, url_target: str, verbose_name: str | Promise = _("Delete")):
         super().__init__("tabler_ui/tables/columns/delete.html", url_target, verbose_name)
 
 

@@ -44,7 +44,12 @@ lint.extend-select = ["I", "UP", "FURB"]
 line-length = 129
 exclude = ["migrations"]
 
+[tool.ruff.lint.flake8-bugbear]
+# Lazy translations are immutable, so they can be defaults of arguments
+extend-immutable-calls = ["django.utils.translation.gettext_lazy"]
+
 [tool.mypy]
+files = ["src", "tests"]
 plugins = ["mypy_django_plugin.main"]
 ignore_missing_imports = true
 mypy_path = "src"
