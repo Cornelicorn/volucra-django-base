@@ -1,0 +1,43 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and type check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Install the dependencies
+        id: install
+        run: uv sync --locked
+
+      # Each check runs even if an earlier one failed, so a single run reports all problems
+      - name: Ruff
+        run: uv run ruff check --output-format=github
+
+      - name: Ruff format
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: uv run ruff format --check
+
+      - name: djLint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: uv run djlint --check src
+
+      - name: djhtml
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: uv run djhtml --check src
+
+      - name: mypy
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: uv run mypy
