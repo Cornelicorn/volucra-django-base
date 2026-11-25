@@ -204,7 +204,8 @@ for preferences which are no longer declared, or which are no longer valid, are 
 uv sync
 uv run python -m django test --settings=tests.settings --pythonpath=.
 uv run ruff check && uv run ruff format --check
-uv run djlint --check src
+uv run djlint --check src && uv run djhtml --check src
+uv run mypy
 ```
 
 ### Releases
