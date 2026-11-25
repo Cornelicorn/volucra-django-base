@@ -25,8 +25,8 @@ button to the login page of `tabler_ui` and saves its theme in the user preferen
 
 ## Installation
 
-The repository is private, so the machine installing it needs read access to it on GitHub, e.g. through an SSH key or
-a token in the git credentials. With uv, pinned to a tag or commit:
+It needs Python 3.12 or newer and Django 6.1. The repository is private, so the machine installing it needs read
+access to it on GitHub, e.g. through an SSH key or a token in the git credentials. With uv, pinned to a tag or commit:
 
 ```sh
 uv add git+https://github.com/Cornelicorn/volucra-django-base --tag v0.1.0
@@ -217,5 +217,15 @@ release notes, which only has to be published. It fails if the tag doesn't match
 
 ### Dependency updates
 
-Dependabot updates `uv.lock` and the GitHub Actions weekly. The dependencies have an upper bound below their next
-major version, which Dependabot raises when a new major version comes out (`versioning-strategy: widen`).
+Dependabot updates `uv.lock` and the GitHub Actions weekly. The lower bound of each dependency is the oldest version
+it was tested with, the upper bound the next version which may break it according to the versioning of that project:
+
+- Django and django-stubs: the next feature release, which may contain backwards incompatible changes and remove
+  deprecated features
+- crispy-bootstrap5: the next release, it uses calendar versions without a compatibility promise
+- django-filter: the next year, it only removes deprecated features in the first release of a year
+- mypy and ruff: the next minor version, which may report new errors
+- the others: the next major version
+
+When a new version beyond the upper bound comes out, Dependabot raises it in its pull request
+(`versioning-strategy: widen`), so these updates are visible in `pyproject.toml`.
