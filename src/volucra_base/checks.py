@@ -9,7 +9,7 @@ EXTENDED_APPS = {
 
 
 @checks.register()
-def check_app_order(app_configs, **kwargs):
+def check_app_order(app_configs, **kwargs):  # noqa: ARG001 Django passes app_configs by keyword
     """Templates of apps earlier in INSTALLED_APPS take precedence, so volucra_base has to come first"""
     names = [config.name for config in apps.get_app_configs()]
     position = names.index("volucra_base")

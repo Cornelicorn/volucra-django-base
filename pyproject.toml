@@ -40,7 +40,7 @@ build-backend = "hatchling.build"
 packages = ["src/tabler_ui", "src/volucra_base"]
 
 [tool.ruff]
-lint.extend-select = ["I", "UP", "FURB"]
+lint.extend-select = ["I", "UP", "FURB", "DJ", "DTZ", "ARG", "ERA", "SIM", "RET", "PTH", "T20"]
 line-length = 129
 exclude = ["migrations"]
 
@@ -48,11 +48,20 @@ exclude = ["migrations"]
 # Lazy translations are immutable, so they can be defaults of arguments
 extend-immutable-calls = ["django.utils.translation.gettext_lazy"]
 
+[tool.ruff.lint.flake8-unused-arguments]
+# Callbacks of Django and social-auth take *args or **kwargs they don't all need
+ignore-variadic-names = true
+
 [tool.mypy]
 files = ["src", "tests"]
 plugins = ["mypy_django_plugin.main"]
 ignore_missing_imports = true
 mypy_path = "src"
+strict_equality = true
+warn_unreachable = true
+warn_unused_ignores = true
+disallow_incomplete_defs = true
+enable_error_code = ["ignore-without-code", "possibly-undefined", "truthy-bool"]
 
 [tool.django-stubs]
 django_settings_module = "tests.settings"

@@ -1,7 +1,7 @@
 from django.conf import settings
 
 
-def sso(request):
+def sso(request):  # noqa: ARG001 Django passes the request to every context processor
     """
     Tells the login pages whether to offer the login with OpenID Connect, which is the case once
     SOCIAL_AUTH_OIDC_OIDC_ENDPOINT is set, and how to label its button (VOLUCRA_SSO_LABEL)
