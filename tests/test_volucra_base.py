@@ -36,7 +36,7 @@ class SSOTests(TestCase):
 
 class AppOrderCheckTests(TestCase):
     def test_no_warning_when_volucra_base_comes_first(self):
-        self.assertEqual([e.id for e in run_checks() if e.id.startswith("volucra_base")], [])
+        self.assertEqual([e.id for e in run_checks() if (e.id or "").startswith("volucra_base")], [])
 
     def test_warning_when_volucra_base_comes_later(self):
         installed_apps = [
@@ -57,8 +57,8 @@ class AppOrderCheckTests(TestCase):
         with self.settings(INSTALLED_APPS=installed_apps):
             warnings = [e for e in run_checks() if e.id == "volucra_base.W001"]
         self.assertEqual(len(warnings), 2)
-        self.assertIn("before tabler_ui", warnings[0].hint)
-        self.assertIn("before django.contrib.admin", warnings[1].hint)
+        self.assertIn("before tabler_ui", warnings[0].hint or "")
+        self.assertIn("before django.contrib.admin", warnings[1].hint or "")
 
 
 class WithoutTablerUITests(TestCase):
@@ -68,7 +68,7 @@ class WithoutTablerUITests(TestCase):
         with self.settings(INSTALLED_APPS=installed_apps):
             self.assertNotIn("tabler_ui.theme", registry)
             self.assertIn("prefapp.page_size", registry)
-            self.assertEqual([e.id for e in run_checks() if e.id.startswith("volucra_base")], [])
+            self.assertEqual([e.id for e in run_checks() if (e.id or "").startswith("volucra_base")], [])
             self.assertContains(self.client.get("/admin/login/"), 'action="/login/oidc/"')
 
 
