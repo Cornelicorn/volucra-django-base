@@ -1,6 +1,7 @@
-from types import SimpleNamespace
+from typing import ClassVar
 
 from django import forms
+from django.apps import AppConfig
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ImproperlyConfigured, ValidationError
@@ -9,6 +10,13 @@ from django.test import TestCase, override_settings
 from volucra_base.admin import UserPreferencesForm
 from volucra_base.models import UserPreferences
 from volucra_base.preferences import PreferenceRegistry, get_preferences, get_save_url, registry
+
+
+class ShopConfig(AppConfig):
+    """An app which isn't installed, the tests pass subclasses declaring preferences to the registry themselves"""
+
+    # Without a module Django can't find the path of the app
+    path = "/shop"
 
 
 class RegistryTests(TestCase):
@@ -26,26 +34,31 @@ class RegistryTests(TestCase):
         self.assertIn("prefapp.page_size", registry)
 
     def test_get_user_preferences_takes_precedence(self):
-        config = SimpleNamespace(
-            label="shop",
-            user_preferences={"ignored": forms.BooleanField(required=False)},
-            get_user_preferences=lambda: {"newsletter": forms.BooleanField(required=False, initial=False)},
-        )
-        self.assertEqual(list(PreferenceRegistry.collect([config])), ["shop.newsletter"])
+        class Config(ShopConfig):
+            user_preferences: ClassVar[dict[str, forms.Field]] = {"ignored": forms.BooleanField(required=False)}
+
+            def get_user_preferences(self) -> dict[str, forms.Field]:
+                return {"newsletter": forms.BooleanField(required=False, initial=False)}
+
+        self.assertEqual(list(PreferenceRegistry.collect([Config("shop", None)])), ["shop.newsletter"])
 
     def test_declarations_have_to_be_form_fields(self):
-        config = SimpleNamespace(label="shop", user_preferences={"newsletter": True})
+        class Config(ShopConfig):
+            user_preferences: ClassVar[dict[str, object]] = {"newsletter": True}
+
         with self.assertRaisesMessage(ImproperlyConfigured, "shop.newsletter has to be a form field"):
-            PreferenceRegistry.collect([config])
+            PreferenceRegistry.collect([Config("shop", None)])
 
     def test_defaults_have_to_be_valid(self):
-        config = SimpleNamespace(label="shop", user_preferences={"size": forms.IntegerField(min_value=5, initial=1)})
+        class Config(ShopConfig):
+            user_preferences: ClassVar[dict[str, forms.Field]] = {"size": forms.IntegerField(min_value=5, initial=1)}
+
         with self.assertRaisesMessage(ImproperlyConfigured, "The default 1 of the preference shop.size is invalid"):
-            PreferenceRegistry.collect([config])
+            PreferenceRegistry.collect([Config("shop", None)])
 
     def test_registry_is_read_only(self):
         with self.assertRaises(TypeError):
-            registry.load()["shop.newsletter"] = forms.BooleanField()
+            registry.load()["shop.newsletter"] = forms.BooleanField()  # type: ignore[index]
 
 
 class PreferencesTests(TestCase):
