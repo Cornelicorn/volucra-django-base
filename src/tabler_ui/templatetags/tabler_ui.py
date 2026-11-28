@@ -1,5 +1,6 @@
 from django import template
 from django.apps import apps
+from django.utils.html import format_html_join
 
 from ..conf import get_setting
 
@@ -7,11 +8,29 @@ register = template.Library()
 
 THEME_KEY = "tabler_ui.theme"
 
+# The attributes of tabler-themes.css and the settings they come from
+THEME_ATTRIBUTES = {
+    "data-bs-theme-base": "THEME_BASE",
+    "data-bs-theme-primary": "THEME_PRIMARY",
+    "data-bs-theme-radius": "THEME_RADIUS",
+    "data-bs-theme-font": "THEME_FONT",
+}
+
 
 @register.simple_tag
 def tabler_ui_setting(name):
     """Returns the setting TABLER_UI_<name> or its default, e.g. {% tabler_ui_setting "SITE_NAME" %}"""
     return get_setting(name)
+
+
+@register.simple_tag
+def tabler_ui_theme_attributes():
+    """
+    Returns the attributes of tabler-themes.css for the settings TABLER_UI_THEME_BASE, _PRIMARY, _RADIUS and _FONT,
+    leaving out those which are None, e.g. <html{% tabler_ui_theme_attributes %}>
+    """
+    values = ((attribute, get_setting(name)) for attribute, name in THEME_ATTRIBUTES.items())
+    return format_html_join("", ' {}="{}"', ((attribute, value) for attribute, value in values if value is not None))
 
 
 @register.simple_tag(takes_context=True)

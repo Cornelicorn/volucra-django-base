@@ -92,6 +92,10 @@ Then run `python manage.py migrate` to create the table of the user preferences.
 | -------------------------------- | ------------------- | ------------------------------------------------------------------------ |
 | `TABLER_UI_SITE_NAME`            | `"Django"`          | Page title and brand of the navbar                                       |
 | `TABLER_UI_THEME_STORAGE_KEY`    | `"tabler_ui_theme"` | localStorage key the browser keeps the theme in                          |
+| `TABLER_UI_THEME_BASE`           | `"gray"`            | Gray scale of the theme, see [Theme](#theme)                             |
+| `TABLER_UI_THEME_PRIMARY`        | `None`              | Primary color of the theme, see [Theme](#theme)                          |
+| `TABLER_UI_THEME_RADIUS`         | `None`              | Scale of the corner radii, see [Theme](#theme)                           |
+| `TABLER_UI_THEME_FONT`           | `None`              | Font of the theme, see [Theme](#theme)                                   |
 | `VOLUCRA_SSO_LABEL`              | `"Volucra SSO"`     | Label of the SSO button on the login pages                               |
 | `SOCIAL_AUTH_OIDC_OIDC_ENDPOINT` | unset               | The SSO button is shown once this is set                                 |
 | `ADMIN_GROUP`                    | `None`              | OIDC group whose members become staff and superusers, `None` to not sync |
@@ -165,6 +169,25 @@ The theme switcher keeps the theme in the localStorage of the browser. If `voluc
 `INSTALLED_APPS`, it saves it in the user preferences of logged in users as well. When a user logs in on a new device,
 the saved theme replaces the one of the device. Users who haven't saved one yet keep the theme the device used so far.
 
+The settings `TABLER_UI_THEME_*` choose the look of the theme with the attributes of `tabler-themes.css`, `None`
+leaves the default of Tabler:
+
+- `TABLER_UI_THEME_BASE`: `"gray"`, `"slate"`, `"zinc"`, `"neutral"`, `"stone"` or `"mist"`
+- `TABLER_UI_THEME_PRIMARY`: `"blue"`, `"azure"`, `"indigo"`, `"purple"`, `"pink"`, `"red"`, `"orange"`, `"yellow"`,
+  `"lime"`, `"green"`, `"teal"`, `"cyan"` or `"inverted"`
+- `TABLER_UI_THEME_RADIUS`: `"0"`, `"0.5"`, `"1"`, `"1.5"` or `"2"`, as strings
+- `TABLER_UI_THEME_FONT`: `"sans-serif"`, `"serif"`, `"monospace"` or `"comic"`
+
+`TABLER_UI_THEME_BASE` defaults to `"gray"`, the blue tinted gray scale of Tabler up to 1.5. Tabler 1.6 changed its
+default to `"neutral"`, set `TABLER_UI_THEME_BASE = None` for it.
+
+### Icons
+
+The [Tabler Icons](https://tabler.io/icons) webfont with the outline icons is included, e.g.
+`<i class="ti ti-pencil"></i>`. The browser only downloads the parts of the font with icons shown on the page. The
+filled icons aren't included: their stylesheet uses the same class names as the outline icons, so both can't be used
+on one page.
+
 ### User preferences
 
 Any app can declare preferences in the attribute `user_preferences` of its `AppConfig`, as a dictionary of form fields.
@@ -217,6 +240,19 @@ release notes, which only has to be published. It fails if the tag doesn't match
 Publishing the release starts the publish workflow, which uploads the wheel and the source distribution of the release
 to PyPI with [Trusted Publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored in the
 repository. It runs in the GitHub environment `pypi`, which can require an approval before the upload.
+
+### Updating Tabler
+
+The files in `src/tabler_ui/static/tabler_ui/dist` are copied unchanged from the npm packages, currently
+`@tabler/core` 1.7.5 and `@tabler/icons-webfont` 3.52.0:
+
+- `css/` and `js/`: `tabler.min.css`, `tabler-themes.min.css` and `tabler.min.js` with their source maps from
+  `dist/css` and `dist/js` of `@tabler/core`
+- `tabler-icons/`: `tabler-icons.min.css` from `dist` of `@tabler/icons-webfont` and the fonts in `dist/fonts` it
+  references
+
+The tests run `collectstatic` with `ManifestStaticFilesStorage`, which fails if a stylesheet references a missing
+file.
 
 ### Dependency updates
 
