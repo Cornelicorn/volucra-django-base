@@ -4,9 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    # Raise the upper bounds in pyproject.toml when a new major version comes out, versions within the
-    # bounds only update uv.lock
-    versioning-strategy: "widen"
+    # Raise an upper bound in pyproject.toml when a version beyond it comes out, versions within the bounds only
+    # update uv.lock. The lower bounds stay, so projects using the package aren't forced to update.
+    versioning-strategy: "increase-if-necessary"
 
   - package-ecosystem: "github-actions"
     directory: "/"
