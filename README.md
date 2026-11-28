@@ -231,4 +231,5 @@ it was tested with, the upper bound the next version which may break it accordin
 - the others: the next major version
 
 When a new version beyond the upper bound comes out, Dependabot raises it in its pull request
-(`versioning-strategy: widen`), so these updates are visible in `pyproject.toml`.
+(`versioning-strategy: increase-if-necessary`), so these updates are visible in `pyproject.toml`. Versions within the
+bounds only update `uv.lock`, the lower bounds stay.
